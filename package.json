@@ -1,0 +1,26 @@
+{
+  "name": "playwright-demo-api-tests",
+  "version": "1.0.0",
+  "description": "Portfolio",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^26.6.6",
+    "@typescript-eslint/eslint-plugin": "^8.72.2",
+    "@typescript-eslint/parser": "^8.72.2",
+    "dotenv": "^18.0.10",
+    "eslint": "^10.15.0",
+    "husky": "^9.1.7",
+    "typescript-eslint": "^8.72.2"
+  },
+  "scripts": {
+    "pl:run": "playwright test",
+    "pl:open": "playwright test --ui",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky"
+  }
+}
