@@ -1,79 +1,110 @@
-import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import { defineConfig } from '@playwright/test';
+import { API_ENDPOINT } from '@constants/env';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
+dotenv.config();
+
 export default defineConfig({
-  testDir: './tests',
+  /* Global timeout for the whole test run is given 2 hours */
+  globalTimeout: 2 * 60 * 60 * 1000,
+
+  /* Each test is given 10 minutes */
+  timeout: 10 * 60 * 1000,
+
+  /* Each assertion is given 10 seconds */
+  expect: { timeout: 10 * 1000 },
+  
   /* Run tests in files in parallel */
   fullyParallel: true,
+
+  /* Parallel tests config */
+  workers: process.env.CI ? 10 : undefined,
+
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
+
+  /* Limit the number of failures on CI to save resources */
+  maxFailures: process.env.CI ? 30 : undefined,
+
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['html', { open: 'never' }],
+    [
+      'allure-playwright',
+      {
+        environmentInfo: {
+          OS: process.platform,
+          CI: process.env.CI ? 'Yes' : 'No',
+          BUILD_ID: process.env.BUILD_ID,
+        },
+      },
+    ],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+    baseURL: API_ENDPOINT,
+
+    /* Each action is given 10 seconds */
+    actionTimeout: 10 * 1000,
+
+    /* Each navigation is given 30 seconds */
+    navigationTimeout: 30 * 1000,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: 'off',
+
+    /* Screenshots on failure */
+    screenshot: {
+      mode: 'on-first-failure',
+      fullPage: true,
+    },
+
+    /* Set timezone */
+    timezoneId: 'UTC',
   },
 
   /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+  projects: (() => {
+    const baseProjects = [
+      {
+        name: 'setup',
+        testMatch: '**/global.setup.ts',
+      },
+      {
+        name: 'cleanup-db',
+        testMatch: '**/db.cleanup.ts',
+      },
+    ];
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    const bookerProject =
+      [
+        {
+          name: 'full-flow',
+          testMatch: '**/*.spec.full-flow.ts',
+          use: { trace: 'retain-on-failure' as const },
+          dependencies: ['setup'],
+        },
+      ];
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    const commonProjects = [
+      {
+        name: 'debug',
+        testDir: './tests',
+        testMatch: '**/debug.spec.ts',
+        use: { trace: 'off' },
+        dependencies: ['setup'],
+      },
+    ];
 
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+    return [...baseProjects, ...bookerProject, ...commonProjects];
+  })(),
 });
