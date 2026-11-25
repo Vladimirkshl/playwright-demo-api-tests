@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 
 import { defineConfig } from '@playwright/test';
-import { API_ENDPOINT } from '@constants/env';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -51,7 +50,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: API_ENDPOINT,
+    baseURL: process.env.API_ENDPOINT,
 
     /* Each action is given 10 seconds */
     actionTimeout: 10 * 1000,
