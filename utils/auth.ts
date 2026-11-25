@@ -1,7 +1,6 @@
 import { APIRequestContext } from '@playwright/test';
 import path from 'path';
 import { FileSystemUtils } from './file-system-utils';
-import { API_ENDPOINT } from '@constants/env';
 
 export class AuthUtils {
   static getAuthFilePath(): string {
@@ -9,7 +8,7 @@ export class AuthUtils {
   }
 
   static async authenticate(request: APIRequestContext): Promise<void> {
-    const response = await request.post(`${API_ENDPOINT}auth`, {
+    const response = await request.post(`${process.env.API_ENDPOINT}auth`, {
       data: {
         username: process.env.AUTH_USER_NAME,
         password: process.env.AUTH_PASSWORD,
