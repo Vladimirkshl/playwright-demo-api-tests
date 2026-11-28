@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Portfolio",
   "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "date-fns": "^4.4.0",
+    "date-fns-tz": "^3.2.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
     "@stylistic/eslint-plugin": "^5.10.0",
@@ -28,9 +31,5 @@
     "allure:clean": "rm -rf allure-results",
     "allure": "allure serve -h localhost",
     "prepare": "husky"
-  },
-  "dependencies": {
-    "date-fns": "^4.4.0",
-    "date-fns-tz": "^3.2.0"
   }
 }
